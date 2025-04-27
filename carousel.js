@@ -16,7 +16,7 @@
  * @attribute autoplay   Boolean: presence reflects enabled autoplay
  * @attribute interval   Number: milliseconds between slides
  */
-class AccessibleCarousel extends HTMLElement {
+class Carousel extends HTMLElement {
     static get observedAttributes() { return ['autoplay', 'interval']; }
   
     // Private state
@@ -46,14 +46,16 @@ class AccessibleCarousel extends HTMLElement {
       sheet.replaceSync(`
         :host { display: block; max-width: 600px; margin: auto; }
         .carousel { position: relative; overflow: hidden; }
+        .carousel:focus { border: 8px solid green; }
         .viewport { display: flex; width: 100%; transition: transform var(--carousel-transition-duration,0.3s) ease; }
-        ::slotted(img) { flex: 0 0 100%; display: none; width:100%; height:auto; }
+        ::slotted(img) { flex: 0 0 100%; width:100%; height:auto; }
         ::slotted([aria-hidden="false"]) { display:block; }
         .controls { position:absolute; top:50%; width:100%; display:flex; justify-content:space-between; transform:translateY(-50%); }
         :host(:state(playing)) .controls { opacity:0.5; }
         button { background:var(--carousel-button-bg,rgba(0,0,0,0.5)); border:none; color:var(--carousel-button-color,#fff); font-size:var(--carousel-button-size,2rem); padding:0.5em; cursor:pointer; }
         button:focus { outline:2px solid gold; }
         .caption { text-align:center; margin-top:0.5em; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
       `);
       shadow.adoptedStyleSheets = [sheet];
   
@@ -68,6 +70,7 @@ class AccessibleCarousel extends HTMLElement {
             </slot>
           </div>
           <div class="caption" part="caption"><slot name="caption"></slot></div>
+          <div class="sr-only" aria-live="polite" aria-atomic="true"></div>
         </div>
       `;
   
@@ -76,9 +79,6 @@ class AccessibleCarousel extends HTMLElement {
       this.#slot         = shadow.querySelector('slot:not([name])');
       this.#controlsSlot = shadow.querySelector('slot[name="controls"]');
       this.#captionSlot  = shadow.querySelector('slot[name="caption"]');
-  
-      // Initial rendering
-      this.#initialize();
     }
   
     /**
@@ -112,6 +112,10 @@ class AccessibleCarousel extends HTMLElement {
     }
   
     connectedCallback() {
+      // Initialize the carousel on first connect
+      this.#initialize();
+      
+      // Set up event listeners
       this.#slot.addEventListener('slotchange', this.#initialize);
       this.#controlsSlot.addEventListener('slotchange', this.#initialize);
       this.#region.addEventListener('keydown', this.#onKeydown);
@@ -156,10 +160,16 @@ class AccessibleCarousel extends HTMLElement {
     #updateSlides() {
       const label = `Slide ${this.#currentIndex+1} of ${this.#total}`;
       this.#internals.ariaLabel = label;
+      
+      // Update the live region to announce slide change
+      const liveRegion = this.shadowRoot.querySelector('.sr-only');
+      liveRegion.textContent = label;
+      
       const vp = this.shadowRoot.querySelector('.viewport');
       this.#slides.forEach((sl,i)=>{
         const active = i===this.#currentIndex;
-        sl.toggleAttribute('aria-hidden', !active);
+        // Use proper string values for aria-hidden instead of toggleAttribute
+        sl.setAttribute('aria-hidden', active ? 'false' : 'true');
         sl.tabIndex = active?0:-1;
         sl.setAttribute('role','group');
         sl.setAttribute('aria-roledescription','slide');
@@ -185,5 +195,4 @@ class AccessibleCarousel extends HTMLElement {
     }
   }
   
-  customElements.define('accessible-carousel', AccessibleCarousel);
-  
+  customElements.define('my-carousel', Carousel);
