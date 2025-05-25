@@ -56,7 +56,7 @@ export class StarRating extends HTMLElement {
     }
 
     set required(value) {
-        value ? this.setAttribute('required', '') : this.removeAttribute('required');
+        this.#updateRequired(value)
         this.#updateValidity();
     }
 
@@ -90,9 +90,11 @@ export class StarRating extends HTMLElement {
             this.#internals.setFormValue(String(this.#value));
             this.#updateDisplay();
             this.#updateValidity();
-        } else if (name === 'required') {
+        } else if (name === 'required' && oldValue !== newValue) {
+            debugger
             this.#updateDisplay();
             this.#updateValidity();
+            this.#updateRequired(newValue !== null);
         }
     }
 
@@ -157,6 +159,18 @@ export class StarRating extends HTMLElement {
                 'Please select a rating',
                 this.shadowRoot.querySelector('[role="radio"][tabindex="0"]')
             );
+        }
+    }
+
+    #updateRequired(isRequired) {
+        const radioGroup = this.shadowRoot.querySelector('[role="radiogroup"]');
+
+        if (isRequired) {
+            this.setAttribute('required', '')
+            radioGroup.setAttribute('aria-required', 'true');
+        } else {
+            this.removeAttribute('required');
+            radioGroup.removeAttribute('aria-required');
         }
     }
 }
