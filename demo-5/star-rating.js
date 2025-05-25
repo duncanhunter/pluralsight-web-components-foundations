@@ -35,7 +35,7 @@ class StarRating extends HTMLElement {
     }
 
     disconnectedCallback() {
-        this.removeEventListener('click', this);
+        this.shadowRoot.removeEventListener('click', this);
     }
 
     // Note: attributeChangedCallback is called whenever the observed attribute changes,

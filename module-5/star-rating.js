@@ -10,6 +10,9 @@ starRatingStyles.replaceSync(`
         content: " *";
         color: red;
     }
+    :host(:state(touched):invalid) div[role="radiogroup"] {
+        border: 2px solid red;
+    }
     ::slotted([slot="label"]) {
         font-weight: bold;
     }
@@ -68,16 +71,17 @@ export class StarRating extends HTMLElement {
 
     connectedCallback() {
         this.shadowRoot.addEventListener('click', this);
+        this.shadowRoot.addEventListener('focusout', this);
 
         const initialValue = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
         this.#internals.setFormValue(String(initialValue));
         this.#updateDisplay();
         this.#updateValidity();
-
     }
 
     disconnectedCallback() {
-        this.removeEventListener('click', this);
+        this.shadowRoot.removeEventListener('click', this);
+        this.shadowRoot.removeEventListener('focusout', this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -96,6 +100,8 @@ export class StarRating extends HTMLElement {
         this.#value = +this.getAttribute('value') ?? 0;
         this.#internals.setFormValue(String(this.#value));
         this.#updateDisplay();
+        this.#updateValidity();
+        this.#internals.states.delete('touched');
     }
 
     handleEvent(event) {
@@ -107,6 +113,8 @@ export class StarRating extends HTMLElement {
             this.#internals.setFormValue(String(this.#value));
             this.#updateDisplay(true);
             this.#updateValidity();
+        } else if (event.type === 'focusout') {
+            this.#internals.states.add('touched');
         }
     }
 

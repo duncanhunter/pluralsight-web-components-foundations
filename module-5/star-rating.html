@@ -26,7 +26,7 @@
 
 <body>
     <form onsubmit="alert(new FormData(this).get('rating')); return false">
-        <star-rating name="rating">
+        <star-rating required name="rating">
             <span slot="label">Rating:</span>
         </star-rating>
         <button type="submit">Submit</button>

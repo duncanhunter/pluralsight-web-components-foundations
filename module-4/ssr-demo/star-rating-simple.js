@@ -41,7 +41,7 @@ export class StarRating extends HTMLElement {
     }
 
     disconnectedCallback() {
-        this.removeEventListener('click', this);
+        this.shadowRoot.removeEventListener('click', this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
