@@ -13,5 +13,5 @@ cd module-1
 npx http-server
 ```
 
-then open go to this url in the browser [http://localhost:8080/star-rating.html](http://localhost:8080/star-rating.html)
+Then go to this url in the browser [http://localhost:8080/star-rating.html](http://localhost:8080/star-rating.html)
 
