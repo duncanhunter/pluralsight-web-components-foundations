@@ -1,17 +1,4 @@
-const starRatingStyles = new CSSStyleSheet();
-starRatingStyles.replaceSync(`
-    [part="star"] {
-        cursor: pointer;
-    }
-    :host[readonly] {
-        pointer-events: none;
-    }
-    ::slotted([slot="label"]) {
-        font-weight: bold;
-    }
-`);
-
-class StarRating extends HTMLElement {
+export class StarRating extends HTMLElement {
     #value = 0;
     #initialized = false;
 
@@ -21,19 +8,29 @@ class StarRating extends HTMLElement {
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open', delegatesFocus: true });
-        this.shadowRoot.adoptedStyleSheets = [starRatingStyles];
+        this.attachShadow({ mode: 'open', delegatesFocus: true, serializable: true });
         this.shadowRoot.innerHTML = `
-            <label id="label">
-                <slot name="label"></slot>
-            </label>
-            <div aria-labelledby="label" role="radiogroup">
-                <span part="star" role="radio" data-star="1" aria-checked="false">☆</span>
-                <span part="star" role="radio" data-star="2" aria-checked="false">☆</span>
-                <span part="star" role="radio" data-star="3" aria-checked="false">☆</span>
-                <span part="star" role="radio" data-star="4" aria-checked="false">☆</span>
-                <span part="star" role="radio" data-star="5" aria-checked="false">☆</span>
-            </div>`;
+        <style>
+            [part="star"] {
+                cursor: pointer;
+            }
+            :host[readonly] {
+                pointer-events: none;
+            }
+            ::slotted([slot="label"]) {
+                font-weight: bold;
+            }
+        </style>
+        <label id="label">
+            <slot name="label"></slot>
+        </label>
+        <div aria-labelledby="label" role="radiogroup">
+            <span part="star" role="radio" data-star="1" aria-checked="false">☆</span>
+            <span part="star" role="radio" data-star="2" aria-checked="false">☆</span>
+            <span part="star" role="radio" data-star="3" aria-checked="false">☆</span>
+            <span part="star" role="radio" data-star="4" aria-checked="false">☆</span>
+            <span part="star" role="radio" data-star="5" aria-checked="false">☆</span>
+        </div>`;
 
     }
 

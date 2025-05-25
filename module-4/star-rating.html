@@ -6,7 +6,7 @@
     <title>Pluralsight Web Component Foundations</title>
     <script type="module" src="./star-rating.js"></script>
     <style>
-        :not(:defined) {
+        :not(:defined):not([ssr]) {
             display: none;
         }
 
@@ -17,6 +17,7 @@
         star-rating::part(selected-star) {
             color: gold;
         }
+
         [slot="label"] {
             font-weight: 300;
         }
@@ -26,6 +27,34 @@
 <body>
     <star-rating value="2">
         <span slot="label">Rating:</span>
+    </star-rating>
+    <star-rating value="2" ssr>
+        <template shadowrootmode="open">
+            <style>
+                [part="star"] {
+                    cursor: pointer;
+                }
+
+                :host[readonly] {
+                    pointer-events: none;
+                }
+
+                ::slotted([slot="label"]) {
+                    font-weight: bold;
+                }
+            </style>
+            <label id="label">
+                <slot name="label"></slot>
+            </label>
+            <div aria-labelledby="label" role="radiogroup">
+                <span part="star" role="radio" data-star="1" aria-checked="false">★</span>
+                <span part="star selected-star" role="radio" data-star="2" aria-checked="true" tabindex="0">★</span>
+                <span part="star" role="radio" data-star="3" aria-checked="false">☆</span>
+                <span part="star" role="radio" data-star="4" aria-checked="false">☆</span>
+                <span part="star" role="radio" data-star="5" aria-checked="false">☆</span>
+            </div>
+        </template>
+        <span slot="label">Rating</span>
     </star-rating>
 </body>
 

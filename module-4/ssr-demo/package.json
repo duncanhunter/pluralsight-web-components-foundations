@@ -1,0 +1,12 @@
+{
+  "name": "web-components-ssr-demo",
+  "version": "1.0.0",
+  "description": "Minimal SSR demo for Web Components with Happy DOM",
+  "type": "module",
+  "scripts": {
+    "ssr": "node ssr-demo.js"
+  },
+  "dependencies": {
+    "happy-dom": "17.4.7"
+  }
+}
