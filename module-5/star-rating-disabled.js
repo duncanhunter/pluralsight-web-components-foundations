@@ -6,6 +6,10 @@ starRatingStyles.replaceSync(`
     :host[readonly] {
         pointer-events: none;
     }
+    :host(:disabled) {
+        opacity: 0.4;
+        pointer-events: none;
+    }
     ::slotted([slot="label"]) {
         font-weight: bold;
     }
@@ -28,22 +32,57 @@ template.innerHTML = `
 export class StarRating extends HTMLElement {
     #value = 0;
     #initialized = false;
+    #internals;
+    #disabled = false;
 
+    static formAssociated = true;
     static get observedAttributes() {
-        return ['value'];
+        return ['value', 'disabled'];
+    }
+
+    get value() {
+        return this.#value;
+    }
+
+    set value(val) {
+        // not guarding for initalised
+        const numVal = +val;
+        if (numVal >= 0 && numVal <= 5) {
+            this.#value = numVal;
+            this.#internals.setFormValue(String(numVal));
+            this.#updateDisplay();
+        }
+    }
+
+    get disabled() {
+        return this.#disabled;
+    }
+
+    set disabled(value) {
+        const isDisabled = Boolean(value);
+        this.#disabled = isDisabled;
+
+        isDisabled ? this.setAttribute('disabled', '') : this.removeAttribute('disabled');
     }
 
     constructor() {
         super();
+
+        this.#internals = this.attachInternals();
         this.attachShadow({ mode: 'open', delegatesFocus: true, serializable: true });
         this.shadowRoot.adoptedStyleSheets = [starRatingStyles];
         this.shadowRoot.appendChild(template.content.cloneNode(true));
-
     }
 
     connectedCallback() {
         this.#initialized = true;
         this.shadowRoot.addEventListener('click', this);
+
+        const initialValue = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
+        if (this.#internals) {
+            this.#internals.setFormValue(String(initialValue));
+        }
+
         this.#updateDisplay();
     }
 
@@ -54,15 +93,30 @@ export class StarRating extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'value') {
             this.#value = +newValue;
+
+            this.#internals.setFormValue(String(this.#value));
         }
+        if (name === 'disabled') {
+            this.#disabled = newValue !== null;
+        }
+    }
+
+    formDisabledCallback(isDisabled) {
+        this.#disabled = isDisabled;
     }
 
     handleEvent(event) {
         if (event.type === 'click') {
+            if (this.#disabled) { return };
+
             const selectedStar = event.target.closest('[data-star]');
             if (!selectedStar) return;
 
             this.#value = +selectedStar.dataset.star;
+
+
+            this.#internals.setFormValue(String(this.#value));
+
             this.#updateDisplay(true);
         }
     }
@@ -78,6 +132,7 @@ export class StarRating extends HTMLElement {
             if (isSelectedStar) {
                 star.setAttribute('aria-checked', 'true');
                 star.textContent = '★';
+                star.setAttribute('tabindex', '0');
                 star.setAttribute('part', 'star selected-star');
 
                 if (shouldFocus) {
@@ -86,12 +141,8 @@ export class StarRating extends HTMLElement {
             } else {
                 star.setAttribute('aria-checked', 'false');
                 star.textContent = isFilledStar ? '★' : '☆';
+                star.removeAttribute('tabindex');
                 star.setAttribute('part', 'star');
-                if (this.#value === 0 && index === 0) {
-                    star.setAttribute('tabindex', '0');
-                } else {
-                    star.removeAttribute('tabindex');
-                }
             }
         });
     }

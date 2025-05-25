@@ -25,9 +25,13 @@
 </head>
 
 <body>
-    <star-rating value="2">
-        <span slot="label">Rating:</span>
-    </star-rating>
+    <form onsubmit="alert(new FormData(this).get('rating')); return false">
+        <star-rating name="rating">
+            <span slot="label">Rating:</span>
+        </star-rating>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+    </form>
 </body>
 
 </html>

@@ -83,8 +83,12 @@ class StarRating extends HTMLElement {
             } else {
                 star.setAttribute('aria-checked', 'false');
                 star.textContent = isFilledStar ? '★' : '☆';
-                star.removeAttribute('tabindex');
                 star.setAttribute('part', 'star');
+                if (this.#value === 0 && index === 0) {
+                    star.setAttribute('tabindex', '0');
+                } else {
+                    star.removeAttribute('tabindex');
+                }
             }
         });
     }

@@ -6,6 +6,10 @@ starRatingStyles.replaceSync(`
     :host[readonly] {
         pointer-events: none;
     }
+    :host[required] label::after {
+        content: " *";
+        color: red;
+    }
     ::slotted([slot="label"]) {
         font-weight: bold;
     }
@@ -27,24 +31,49 @@ template.innerHTML = `
 
 export class StarRating extends HTMLElement {
     #value = 0;
-    #initialized = false;
+    #internals;
 
+    static formAssociated = true;
     static get observedAttributes() {
-        return ['value'];
+        return ['value', 'disabled', 'required'];
+    }
+
+    get value() {
+        return this.#value;
+    }
+
+    set value(val) {
+        this.#value = +val;
+        this.#internals.setFormValue(String(this.#value));
+        this.#updateDisplay();
+    }
+
+    get required() {
+        return this.hasAttribute('required');
+    }
+
+    set required(value) {
+        value ? this.setAttribute('required', '') : this.removeAttribute('required');
+        this.#updateValidity();
     }
 
     constructor() {
         super();
-        this.attachShadow({ mode: 'open', delegatesFocus: true, serializable: true });
+
+        this.#internals = this.attachInternals();
+        this.attachShadow({ mode: 'open', delegatesFocus: true });
         this.shadowRoot.adoptedStyleSheets = [starRatingStyles];
         this.shadowRoot.appendChild(template.content.cloneNode(true));
-
     }
 
     connectedCallback() {
-        this.#initialized = true;
         this.shadowRoot.addEventListener('click', this);
+
+        const initialValue = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
+        this.#internals.setFormValue(String(initialValue));
         this.#updateDisplay();
+        this.#updateValidity();
+
     }
 
     disconnectedCallback() {
@@ -54,7 +83,19 @@ export class StarRating extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'value') {
             this.#value = +newValue;
+            this.#internals.setFormValue(String(this.#value));
+            this.#updateDisplay();
+            this.#updateValidity();
+        } else if (name === 'required') {
+            this.#updateDisplay();
+            this.#updateValidity();
         }
+    }
+
+    formResetCallback() {
+        this.#value = +this.getAttribute('value') ?? 0;
+        this.#internals.setFormValue(String(this.#value));
+        this.#updateDisplay();
     }
 
     handleEvent(event) {
@@ -63,14 +104,14 @@ export class StarRating extends HTMLElement {
             if (!selectedStar) return;
 
             this.#value = +selectedStar.dataset.star;
+            this.#internals.setFormValue(String(this.#value));
             this.#updateDisplay(true);
+            this.#updateValidity();
         }
     }
 
     #updateDisplay(shouldFocus = false) {
-        if (!this.#initialized) { return; }
-
-        this.shadowRoot.querySelectorAll('[role="radio"]').forEach((star) => {
+        this.shadowRoot.querySelectorAll('[role="radio"]').forEach((star, index) => {
             const starValue = +star.dataset.star;
             const isSelectedStar = starValue === this.#value;
             const isFilledStar = starValue <= this.#value;
@@ -87,10 +128,28 @@ export class StarRating extends HTMLElement {
             } else {
                 star.setAttribute('aria-checked', 'false');
                 star.textContent = isFilledStar ? '★' : '☆';
-                star.removeAttribute('tabindex');
                 star.setAttribute('part', 'star');
+                if (this.#value === 0 && index === 0) {
+                    star.setAttribute('tabindex', '0');
+                } else {
+                    star.removeAttribute('tabindex');
+                }
             }
         });
+    }
+
+    #updateValidity() {
+        const isValid = !this.hasAttribute('required') || this.#value > 0;
+
+        if (isValid) {
+            this.#internals.setValidity({});
+        } else {
+            this.#internals.setValidity(
+                { valueMissing: true },
+                'Please select a rating',
+                this.shadowRoot.querySelector('[role="radio"][tabindex="0"]')
+            );
+        }
     }
 }
 
