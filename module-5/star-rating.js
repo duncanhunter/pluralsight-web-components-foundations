@@ -91,7 +91,6 @@ export class StarRating extends HTMLElement {
             this.#updateDisplay();
             this.#updateValidity();
         } else if (name === 'required' && oldValue !== newValue) {
-            debugger
             this.#updateDisplay();
             this.#updateValidity();
             this.#updateRequired(newValue !== null);
