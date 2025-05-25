@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<head>
+    <script type="module" src="./carousel.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 1em;
+        }
+        /* Custom styles for the carousel using CSS parts and custom properties */
+        my-carousel {
+            --carousel-focus-color: #4d90fe;
+            --carousel-transition-duration: 0.5s;
+            margin: 2em 0;
+        }
+        my-carousel::part(rotate-button) {
+            background-color: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Accessible Web Component Carousel Example</h1>
+    
+    <p>This carousel implements the ARIA Authoring Practices Guide recommendations for accessibility:</p>
+    <ul>
+        <li>Keyboard navigation with arrow keys, Home and End keys</li>
+        <li>VoiceOver announcements for slide changes</li>
+        <li>Auto-rotation that pauses on hover or focus</li>
+        <li>Respects reduced motion preferences</li>
+    </ul>
+
+    <my-carousel 
+        autoplay 
+        interval="5000" 
+        label="Demo images slideshow">
+        <img src="./image-1.png" alt="First demo image"/>
+        <img src="./image-2.png" alt="Second demo image"/>
+        <img src="./image-3.png" alt="Third demo image"/>
+        <div slot="caption">Demo carousel with accessibility features</div>
+    </my-carousel>
+</body>

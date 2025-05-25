@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Star Rating with Keyboard Nav</title>
+    <script>
+        class StarRating extends HTMLElement {
+            static formAssociated = true;
+            #internals = this.attachInternals();
+            #value = 0;
+
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' }).innerHTML = `
+          <style>
+            :host { display:inline-block; }
+            slot[name="label"] { margin-right:0.5em; }
+            .stars { display:inline-flex; outline:none; }
+            [role="radio"] {
+              font-size:2rem;
+              cursor:pointer;
+              user-select:none;
+              padding:0 0.1em;
+            }
+            [role="radio"][aria-checked="true"] { color:gold; }
+            :host(:--touched:invalid) .stars { outline:2px solid red; }
+          </style>
+
+          <!-- slotted label -->
+          <label id="rating-label">
+            <slot name="label"></slot>
+            </label>
+
+          <!-- radiogroup -->
+          <div class="stars"
+               role="radiogroup"
+               aria-labelledby="rating-label"
+               tabindex="-1">
+            ${[...Array(5)].map((_, i) =>
+                    `<span
+                 role="radio"
+                 data-star="${i + 1}"
+                 tabindex="-1"
+                 aria-checked="false"
+               >☆</span>`
+                ).join('')}
+          </div>
+        `;
+
+                this.shadowRoot.addEventListener('click', this);
+                this.shadowRoot.addEventListener('keydown', this);
+                this.shadowRoot.addEventListener('focusout', this);
+            }
+
+            connectedCallback() {
+                // initial render & set the first star focusable
+                this._updateDisplay();
+            }
+
+            disconnectedCallback() {
+                this.shadowRoot.removeEventListener('click', this);
+                this.shadowRoot.removeEventListener('keydown', this);
+                this.shadowRoot.removeEventListener('focusout', this);
+            }
+
+            handleEvent(e) {
+                const stars = Array.from(this.shadowRoot.querySelectorAll('[role="radio"]'));
+                if (e.type === 'click') {
+                    const star = e.target.closest('[data-star]');
+                    if (!star) return;
+                    this.#value = +star.dataset.star;
+                    this._commit();
+                    star.focus();
+                }
+                else if (e.type === 'keydown') {
+                    const current = e.target.closest('[role="radio"]');
+                    if (!current) return;
+                    let newVal = this.#value;
+                    switch (e.key) {
+                        case 'ArrowRight':
+                        case 'ArrowDown':
+                            newVal = this.#value < 5 ? this.#value + 1 : 1;
+                            break;
+                        case 'ArrowLeft':
+                        case 'ArrowUp':
+                            newVal = this.#value > 1 ? this.#value - 1 : 5;
+                            break;
+                        case 'Home':
+                            newVal = 1;
+                            break;
+                        case 'End':
+                            newVal = 5;
+                            break;
+                        default:
+                            return;
+                    }
+                    e.preventDefault();
+                    this.#value = newVal;
+                    this._commit();
+                    this.shadowRoot.querySelector(`[data-star="${newVal}"]`).focus();
+                }
+                else if (e.type === 'focusout') {
+                    // mark touched on first blur
+                    if (!this.#internals.states.has('touched')) {
+                        this.#internals.states.add('touched');
+                    }
+                }
+            }
+
+            _commit() {
+                const stars = Array.from(this.shadowRoot.querySelectorAll('[role="radio"]'));
+                stars.forEach((r, idx) => {
+                    const n = idx + 1;
+                    r.setAttribute('aria-checked', n === this.#value ? 'true' : 'false');
+                    r.tabIndex = (n === this.#value || (this.#value === 0 && idx === 0)) ? 0 : -1;
+                    r.textContent = n <= this.#value ? '★' : '☆';
+                });
+                // form-integration
+                this.#internals.setFormValue(this.#value);
+                this.#internals.setValidity({}, '', true);
+            }
+
+            _updateDisplay() {
+                // same as commit but without touching form APIs
+                const stars = Array.from(this.shadowRoot.querySelectorAll('[role="radio"]'));
+                stars.forEach((r, idx) => {
+                    const n = idx + 1;
+                    r.setAttribute('aria-checked', n === this.#value ? 'true' : 'false');
+                    r.tabIndex = (n === this.#value || (this.#value === 0 && idx === 0)) ? 0 : -1;
+                    r.textContent = n <= this.#value ? '★' : '☆';
+                });
+            }
+
+            formResetCallback() {
+                this.#value = 0;
+                this.#internals.states.delete('touched');
+                this._commit();
+            }
+        }
+
+        customElements.define('star-rating', StarRating);
+    </script>
+</head>
+
+<body>
+    <form onsubmit="alert(new FormData(this).get('rating')); return false">
+        <star-rating name="rating" id="rating">
+            <span slot="label"> Your Rating:</span>
+        </star-rating>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+    </form>
+</body>
+
+</html>

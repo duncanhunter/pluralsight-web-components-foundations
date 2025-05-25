@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pluralsight Web Component Foundations</title>
+    <script type="module" src="./star-rating.js"></script>
+    <style>
+        :not(:defined) {
+            display: none;
+        }
+
+        star-rating::part(star) {
+            font-size: 2rem;
+        }
+
+        star-rating::part(selected-star) {
+            color: gold;
+        }
+        [slot="label"] {
+            font-weight: 300;
+        }
+    </style>
+</head>
+
+<body>
+    <star-rating value="2">
+        <span slot="label">Rating:</span>
+    </star-rating>
+</body>
+
+</html>

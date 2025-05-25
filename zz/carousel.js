@@ -1,21 +1,3 @@
-/**
- * Accessible Carousel Web Component
- *
- * Demonstrates:
- * - Class-field arrow functions for auto-bound handlers directly on core methods
- * - Observed attributes & attributeChangedCallback
- * - Reflecting properties to attributes (and vice versa)
- * - CSS parts & custom properties
- * - Named slots for control overrides and captions
- * - Custom events on slide change
- * - Adopted stylesheet (constructible CSSStyleSheet)
- * - delegatesFocus for keyboard focus delegation
- * - ElementInternals.states pseudo-states (playing)
- * - ARIA live-region via ElementInternals.ariaLive/ariaAtomic
- *
- * @attribute autoplay   Boolean: presence reflects enabled autoplay
- * @attribute interval   Number: milliseconds between slides
- */
 class Carousel extends HTMLElement {
     static get observedAttributes() { return ['autoplay', 'interval']; }
   
