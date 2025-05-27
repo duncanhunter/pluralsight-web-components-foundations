@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pluralsight Web Component Foundations</title>
+    <script type="module" src="./star-rating.js"></script>
+    <style>
+        :not(:defined) {
+            display: none;
+        }
+
+        star-rating::part(star) {
+            font-size: 2rem;
+        }
+
+        star-rating::part(selected-star) {
+            color: gold;
+        }
+
+        [slot="label"] {
+            font-weight: 300;
+        }
+    </style>
+</head>
+
+<body>
+    <form onsubmit="alert(new FormData(this).get('rating')); return false">
+        <star-rating required name="rating">
+            <span slot="label">Rating:</span>
+        </star-rating>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+    </form>
+</body>
+
+</html>

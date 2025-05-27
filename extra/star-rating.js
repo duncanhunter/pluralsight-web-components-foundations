@@ -13,6 +13,11 @@ starRatingStyles.replaceSync(`
     :host(:state(touched):invalid) div[role="radiogroup"] {
         border: 2px solid red;
     }
+    [role="radiogroup"]:has([aria-label*="disabled"]) {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
     ::slotted([slot="label"]) {
         font-weight: bold;
     }
@@ -32,8 +37,9 @@ template.innerHTML = `
     </div>
 `;
 
-class StarRating extends HTMLElement {
+export class StarRating extends HTMLElement {
     #value = 0;
+    #disabled = false;
     #internals;
 
     static formAssociated = true;
@@ -60,6 +66,32 @@ class StarRating extends HTMLElement {
         this.#updateValidity();
     }
 
+    get disabled() {
+        return this.#disabled;
+    }
+
+    set disabled(value) {
+        this.#disabled = Boolean(value);
+        this.#updateDisplay();
+        this.toggleAttribute('disabled', this.#disabled);
+    }
+
+    get validity() {
+        return this.#internals.validity;
+    }
+
+    get validationMessage() {
+        return this.#internals.validationMessage;
+    }
+
+    checkValidity() {
+        return this.#internals.checkValidity();
+    }
+
+    reportValidity() {
+        return this.#internals.reportValidity();
+    }
+
     constructor() {
         super();
 
@@ -72,6 +104,9 @@ class StarRating extends HTMLElement {
     connectedCallback() {
         this.shadowRoot.addEventListener('click', this);
         this.shadowRoot.addEventListener('focusout', this);
+        this.shadowRoot.addEventListener('keydown', this);
+        this.addEventListener('invalid', this.#handleInvalid);
+
 
         const initialValue = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
         this.#internals.setFormValue(String(initialValue));
@@ -82,6 +117,8 @@ class StarRating extends HTMLElement {
     disconnectedCallback() {
         this.shadowRoot.removeEventListener('click', this);
         this.shadowRoot.removeEventListener('focusout', this);
+        this.shadowRoot.removeEventListener('keydown', this);
+        this.removeEventListener('invalid', this.#handleInvalid);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -94,6 +131,9 @@ class StarRating extends HTMLElement {
             this.#updateDisplay();
             this.#updateValidity();
             this.#updateRequired(newValue !== null);
+        } else if (name === 'disabled' && oldValue !== newValue) {
+            this.#disabled = newValue !== null;
+            this.#updateDisplay();
         }
     }
 
@@ -105,10 +145,17 @@ class StarRating extends HTMLElement {
         this.#internals.states.delete('touched');
     }
 
+    formDisabledCallback(disabled) {
+        this.#disabled = disabled;
+        this.#updateDisplay();
+    }
+
     handleEvent(event) {
+        if (this.#disabled) { return; };
+
         if (event.type === 'click') {
             const selectedStar = event.target.closest('[data-star]');
-            if (!selectedStar) return;
+            if (!selectedStar) { return; }
 
             this.#value = +selectedStar.dataset.star;
             this.#internals.setFormValue(String(this.#value));
@@ -116,14 +163,82 @@ class StarRating extends HTMLElement {
             this.#updateValidity();
         } else if (event.type === 'focusout') {
             this.#internals.states.add('touched');
+        } else if (event.type === 'keydown') {
+            this.#handleKeyDown(event);
         }
     }
 
+
+    #handleInvalid = () => {
+        this.#internals.states.add('touched');
+    }
+
+    #handleKeyDown(event) {
+        const currentStar = event.target.closest('[data-star]');
+        if (!currentStar) return;
+
+        const stars = [...this.shadowRoot.querySelectorAll('[role="radio"]')];
+        const currentIndex = stars.indexOf(currentStar);
+
+        let targetIndex = currentIndex;
+
+        switch (event.key) {
+            case 'ArrowLeft':
+            case 'ArrowUp':
+                event.preventDefault();
+                targetIndex = Math.max(0, currentIndex - 1);
+                this.#selectStar(targetIndex, stars);
+                break;
+
+            case 'ArrowRight':
+            case 'ArrowDown':
+                event.preventDefault();
+                targetIndex = Math.min(stars.length - 1, currentIndex + 1);
+                this.#selectStar(targetIndex, stars);
+                break;
+
+            case 'Home':
+                event.preventDefault();
+                targetIndex = 0;
+                this.#selectStar(targetIndex, stars);
+                break;
+
+            case 'End':
+                event.preventDefault();
+                targetIndex = stars.length - 1;
+                this.#selectStar(targetIndex, stars);
+                break;
+
+            case 'Enter':
+            case ' ':
+                event.preventDefault();
+                this.#selectStar(currentIndex, stars);
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    #selectStar(index, stars) {
+        const targetStar = stars[index];
+        this.#value = +targetStar.dataset.star;
+        this.#internals.setFormValue(String(this.#value));
+        this.#updateDisplay(true);
+        this.#updateValidity();
+    }
+
     #updateDisplay(shouldFocus = false) {
+
         this.shadowRoot.querySelectorAll('[role="radio"]').forEach((star, index) => {
             const starValue = +star.dataset.star;
             const isSelectedStar = starValue === this.#value;
             const isFilledStar = starValue <= this.#value;
+
+            const starLabel = this.#disabled
+                ? `${starValue} star, disabled`
+                : `${starValue} star${starValue === 1 ? '' : 's'}`;
+            star.setAttribute('aria-label', starLabel);
 
             if (isSelectedStar) {
                 star.setAttribute('aria-checked', 'true');
@@ -141,7 +256,7 @@ class StarRating extends HTMLElement {
                 if (this.#value === 0 && index === 0) {
                     star.setAttribute('tabindex', '0');
                 } else {
-                    star.removeAttribute('tabindex');
+                    star.setAttribute('tabindex', '-1');
                 }
             }
         });
