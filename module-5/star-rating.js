@@ -41,14 +41,18 @@ class StarRating extends HTMLElement {
         return ['value', 'disabled', 'required'];
     }
 
-    get value() {
-        return this.#value;
+    set value(val) {
+        const newValue = Number(val);
+        if (this.#value !== newValue) {
+            this.#value = newValue;
+            this.#internals.setFormValue(String(this.#value));
+            this.#updateDisplay();
+            this.#updateValidity();
+        }
     }
 
-    set value(val) {
-        this.#value = +val;
-        this.#internals.setFormValue(String(this.#value));
-        this.#updateDisplay();
+    get value() {
+        return this.#value;
     }
 
     get required() {
@@ -56,13 +60,14 @@ class StarRating extends HTMLElement {
     }
 
     set required(value) {
-        this.#updateRequired(value)
+        this.toggleAttribute('required', Boolean(value));
+        const radioGroup = this.shadowRoot.querySelector('[role="radiogroup"]');
+        radioGroup.toggleAttribute('aria-required', Boolean(value));
         this.#updateValidity();
     }
 
     constructor() {
         super();
-
         this.#internals = this.attachInternals();
         this.attachShadow({ mode: 'open', delegatesFocus: true });
         this.shadowRoot.adoptedStyleSheets = [starRatingStyles];
@@ -72,9 +77,6 @@ class StarRating extends HTMLElement {
     connectedCallback() {
         this.shadowRoot.addEventListener('click', this);
         this.shadowRoot.addEventListener('focusout', this);
-
-        const initialValue = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
-        this.#internals.setFormValue(String(initialValue));
         this.#updateDisplay();
         this.#updateValidity();
     }
@@ -86,20 +88,16 @@ class StarRating extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'value') {
-            this.#value = +newValue;
-            this.#internals.setFormValue(String(this.#value));
-            this.#updateDisplay();
-            this.#updateValidity();
+            this.value = newValue;
         } else if (name === 'required' && oldValue !== newValue) {
+            this.required = newValue !== null;
             this.#updateDisplay();
             this.#updateValidity();
-            this.#updateRequired(newValue !== null);
         }
     }
 
     formResetCallback() {
-        this.#value = +this.getAttribute('value') ?? 0;
-        this.#internals.setFormValue(String(this.#value));
+        this.#value = this.hasAttribute('value') ? +this.getAttribute('value') : 0;
         this.#updateDisplay();
         this.#updateValidity();
         this.#internals.states.delete('touched');
@@ -111,8 +109,7 @@ class StarRating extends HTMLElement {
             if (!selectedStar) return;
 
             this.#value = +selectedStar.dataset.star;
-            this.#internals.setFormValue(String(this.#value));
-            this.#updateDisplay(true);
+            this.#updateDisplay();
             this.#updateValidity();
             this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         } else if (event.type === 'focusout') {
@@ -120,7 +117,7 @@ class StarRating extends HTMLElement {
         }
     }
 
-    #updateDisplay(shouldFocus = false) {
+    #updateDisplay() {
         this.shadowRoot.querySelectorAll('[role="radio"]').forEach((star, index) => {
             const starValue = +star.dataset.star;
             const isSelectedStar = starValue === this.#value;
@@ -129,11 +126,11 @@ class StarRating extends HTMLElement {
             if (isSelectedStar) {
                 star.setAttribute('aria-checked', 'true');
                 star.textContent = '★';
-                star.setAttribute('tabindex', '0');
                 star.setAttribute('part', 'star selected-star');
-
-                if (shouldFocus) {
+                if (star.getAttribute('tabindex') === '0') {
                     star.focus();
+                } else {
+                    star.setAttribute('tabindex', '0');
                 }
             } else {
                 star.setAttribute('aria-checked', 'false');
@@ -159,18 +156,6 @@ class StarRating extends HTMLElement {
                 'Please select a rating',
                 this.shadowRoot.querySelector('[role="radio"][tabindex="0"]')
             );
-        }
-    }
-
-    #updateRequired(isRequired) {
-        const radioGroup = this.shadowRoot.querySelector('[role="radiogroup"]');
-
-        if (isRequired) {
-            this.setAttribute('required', '')
-            radioGroup.setAttribute('aria-required', 'true');
-        } else {
-            this.removeAttribute('required');
-            radioGroup.removeAttribute('aria-required');
         }
     }
 }
