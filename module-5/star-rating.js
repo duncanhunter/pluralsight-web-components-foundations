@@ -1,14 +1,11 @@
 const starRatingStyles = new CSSStyleSheet();
 starRatingStyles.replaceSync(`
+    :host {
+        --star-color: darkgoldenrod;
+    }
     [part="star"] {
         cursor: pointer;
-    }
-    :host[readonly] {
-        pointer-events: none;
-    }
-    :host[required] label::after {
-        content: " *";
-        color: red;
+        color: var(--star-color);
     }
     :host(:state(touched):invalid) div[role="radiogroup"] {
         border: 2px solid red;
