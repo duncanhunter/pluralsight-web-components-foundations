@@ -60,6 +60,7 @@ class StarRating extends HTMLElement {
 
             this.#value = +selectedStar.dataset.star;
             this.#updateDisplay(true);
+            this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
     }
 

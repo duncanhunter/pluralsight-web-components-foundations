@@ -114,6 +114,7 @@ class StarRating extends HTMLElement {
             this.#internals.setFormValue(String(this.#value));
             this.#updateDisplay(true);
             this.#updateValidity();
+            this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         } else if (event.type === 'focusout') {
             this.#internals.states.add('touched');
         }
