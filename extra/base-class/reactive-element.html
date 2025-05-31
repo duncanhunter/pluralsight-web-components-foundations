@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pluralsight Web Component Foundations</title>
+    <script type="module" src="./reactive-element.js"></script>
+    <script type="module" src="./password-input.js"></script>
+    <style>
+        :not(:defined) {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <form>
+        <password-input name="password" label="Create Password" required minlength="8"
+            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])" show-strength
+            value-missing="Password is required" too-short="Password must be at least 8 characters"
+            pattern-mismatch="Password must include uppercase, lowercase, number, and special character">
+        </password-input>
+
+        <button type="submit">Create Account</button>
+    </form>
+</body>
+
+</html>

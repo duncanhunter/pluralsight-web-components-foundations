@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Input Validation Test</title>
+    <script type="module" src="./reactive-element.js"></script>
+    <script type="module" src="./password-input.js"></script>
+    <style>
+        :not(:defined) {
+            display: none;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Password Input Validation Test</h1>
+    
+    <form>
+        <password-input 
+            name="password" 
+            label="Create Password" 
+            required 
+            minlength="8"
+            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])" 
+            show-strength
+            value-missing="Password is required" 
+            too-short="Password must be at least 8 characters"
+            pattern-mismatch="Password must include uppercase, lowercase, number, and special character">
+        </password-input>
+
+        <button type="submit">Create Account</button>
+        <button type="reset">Reset</button>
+    </form>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            console.log('Form data:', Object.fromEntries(formData));
+            alert('Form submitted! Check console for form data.');
+        });
+    </script>
+</body>
+</html>

@@ -8,9 +8,6 @@ class StarRating extends HTMLElement {
 
     constructor() {
         super();
-    }
-
-    connectedCallback() {
         this.innerHTML = `
             <div role="radiogroup">
                 <span role="radio" data-star="1" aria-checked="false">☆</span>
@@ -18,12 +15,14 @@ class StarRating extends HTMLElement {
                 <span role="radio" data-star="3" aria-checked="false">☆</span>
                 <span role="radio" data-star="4" aria-checked="false">☆</span>
                 <span role="radio" data-star="5" aria-checked="false">☆</span>
-            </div>`;
+                </div>`;
+        this.addEventListener('click', this);
+        this.#updateDisplay();
+    }
+
+    connectedCallback() {
 
         this.#initialized = true;
-        this.addEventListener('click', this);
-
-        this.#updateDisplay();
     }
 
     disconnectedCallback() {
