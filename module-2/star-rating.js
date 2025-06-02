@@ -1,6 +1,5 @@
 class StarRating extends HTMLElement {
     #value = 0;
-    #initialized = false;
 
     static get observedAttributes() {
         return ['value'];
@@ -10,11 +9,11 @@ class StarRating extends HTMLElement {
         super();
         this.innerHTML = `
             <div role="radiogroup">
-                <span role="radio" data-star="1" aria-checked="false">☆</span>
-                <span role="radio" data-star="2" aria-checked="false">☆</span>
-                <span role="radio" data-star="3" aria-checked="false">☆</span>
-                <span role="radio" data-star="4" aria-checked="false">☆</span>
-                <span role="radio" data-star="5" aria-checked="false">☆</span>
+                <span role="radio" data-star="1"">☆</span>
+                <span role="radio" data-star="2"">☆</span>
+                <span role="radio" data-star="3"">☆</span>
+                <span role="radio" data-star="4"">☆</span>
+                <span role="radio" data-star="5"">☆</span>
                 </div>`;
         this.addEventListener('click', this);
         this.#updateDisplay();
@@ -22,7 +21,6 @@ class StarRating extends HTMLElement {
 
     connectedCallback() {
 
-        this.#initialized = true;
     }
 
     disconnectedCallback() {
@@ -44,7 +42,6 @@ class StarRating extends HTMLElement {
     }
 
     #updateDisplay() {
-        if (!this.#initialized) { return; }
 
         this.querySelectorAll('[role="radio"]').forEach((star) => {
             const starValue = +star.dataset.star;

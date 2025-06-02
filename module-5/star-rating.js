@@ -21,11 +21,11 @@ template.innerHTML = `
         <slot name="label"></slot>
     </label>
     <div aria-labelledby="label" role="radiogroup">
-        <span part="star" role="radio" data-star="1" aria-checked="false">☆</span>
-        <span part="star" role="radio" data-star="2" aria-checked="false">☆</span>
-        <span part="star" role="radio" data-star="3" aria-checked="false">☆</span>
-        <span part="star" role="radio" data-star="4" aria-checked="false">☆</span>
-        <span part="star" role="radio" data-star="5" aria-checked="false">☆</span>
+        <span part="star" role="radio" data-star="1">☆</span>
+        <span part="star" role="radio" data-star="2">☆</span>
+        <span part="star" role="radio" data-star="3">☆</span>
+        <span part="star" role="radio" data-star="4">☆</span>
+        <span part="star" role="radio" data-star="5">☆</span>
     </div>
 `;
 
@@ -35,7 +35,7 @@ class StarRating extends HTMLElement {
 
     static formAssociated = true;
     static get observedAttributes() {
-        return ['value', 'disabled', 'required'];
+        return ['value', 'required'];
     }
 
     set value(val) {
@@ -60,7 +60,6 @@ class StarRating extends HTMLElement {
         this.toggleAttribute('required', Boolean(value));
         const radioGroup = this.shadowRoot.querySelector('[role="radiogroup"]');
         radioGroup.toggleAttribute('aria-required', Boolean(value));
-        this.#updateValidity();
     }
 
     constructor() {
@@ -88,8 +87,6 @@ class StarRating extends HTMLElement {
             this.value = newValue;
         } else if (name === 'required' && oldValue !== newValue) {
             this.required = newValue !== null;
-            this.#updateDisplay();
-            this.#updateValidity();
         }
     }
 
@@ -128,6 +125,7 @@ class StarRating extends HTMLElement {
                     star.focus();
                 } else {
                     star.setAttribute('tabindex', '0');
+                    star.focus();
                 }
             } else {
                 star.setAttribute('aria-checked', 'false');
