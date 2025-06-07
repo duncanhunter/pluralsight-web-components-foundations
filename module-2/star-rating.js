@@ -8,11 +8,11 @@ class StarRating extends HTMLElement {
         super();
         this.innerHTML = `
             <div role="radiogroup">
-                <span role="radio" data-star="1" aria-checked="false">☆</span>
-                <span role="radio" data-star="2" aria-checked="false">☆</span>
-                <span role="radio" data-star="3" aria-checked="false">☆</span>
-                <span role="radio" data-star="4" aria-checked="false">☆</span>
-                <span role="radio" data-star="5" aria-checked="false">☆</span>
+                <span role="radio" data-star="1">☆</span>
+                <span role="radio" data-star="2">☆</span>
+                <span role="radio" data-star="3">☆</span>
+                <span role="radio" data-star="4">☆</span>
+                <span role="radio" data-star="5">☆</span>
             </div>`;
     }
 }
