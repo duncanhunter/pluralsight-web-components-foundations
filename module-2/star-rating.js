@@ -1,9 +1,9 @@
 class StarRating extends HTMLElement {
-    #value = 0;
-
     static get observedAttributes() {
         return ['value'];
     }
+
+    #value = 0;
 
     constructor() {
         super();
@@ -14,36 +14,29 @@ class StarRating extends HTMLElement {
                 <span role="radio" data-star="3"">☆</span>
                 <span role="radio" data-star="4"">☆</span>
                 <span role="radio" data-star="5"">☆</span>
-                </div>`;
+            </div>`;
         this.addEventListener('click', this);
         this.#updateDisplay();
     }
 
-    connectedCallback() {
-
-    }
-
-    disconnectedCallback() {
-        this.removeEventListener('click', this);
-    }
-
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'value') {
-            this.#value = +newValue;
+            this.#value = Number(newValue);
+            // @TODO show issue setting JS property vs attribute
+            this.#updateDisplay();
         }
     }
 
     handleEvent(event) {
         if (event.type === 'click') {
             const selectedStar = event.target.closest('[data-star]');
-            this.#value = +selectedStar.dataset.star;
+            this.#value = Number(selectedStar.dataset.star);
             this.#updateDisplay();
         }
     }
 
     #updateDisplay() {
-
-        this.querySelectorAll('[role="radio"]').forEach((star) => {
+        this.querySelectorAll('[data-star]').forEach((star) => {
             const starValue = +star.dataset.star;
             const isSelectedStar = starValue === this.#value;
             const isFilledStar = starValue <= this.#value;
