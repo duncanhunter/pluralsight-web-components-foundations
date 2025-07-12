@@ -1,7 +1,7 @@
 class StarRating extends HTMLElement {
     static get observedAttributes() { return ['value']; }
 
-    #value = 0;
+    #value;
 
     constructor() {
         super();
@@ -13,6 +13,8 @@ class StarRating extends HTMLElement {
                 <span role="radio" data-star="4">☆</span>
                 <span role="radio" data-star="5">☆</span>
             </div>`;
+        this.#value = Number(this.getAttribute('value')) || 0;
+        this.addEventListener('click', this.#handleClick);
     }
 
     connectedCallback() {
@@ -24,6 +26,14 @@ class StarRating extends HTMLElement {
             this.#value = Number(newValue);
             this.#updateDisplay();
         }
+    }
+
+    #handleClick(event) {
+        const selectedStar = event.target.closest('[data-star]');
+        if (!selectedStar) return;
+        
+        this.#value = Number(selectedStar.dataset.star);
+        this.#updateDisplay();
     }
 
     #updateDisplay() {

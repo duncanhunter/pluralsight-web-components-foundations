@@ -1,4 +1,4 @@
-# Pluralsight Web Component Foundations
+# Pluralsight Web Components Foundations
 
 ## Getting started
 
