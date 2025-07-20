@@ -13,6 +13,14 @@ class StarRating extends HTMLElement {
 
     #value;
 
+    get value() {
+        return this.#value;
+    }
+
+    set value(val) {
+        this.#value = val;
+    }
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open', delegatesFocus: true });
@@ -55,18 +63,18 @@ class StarRating extends HTMLElement {
     #updateDisplay(shouldFocus = false) {
         const stars = this.shadowRoot.querySelectorAll('[role="radio"]');
         stars.forEach((star, index) => {
-            const starValue = Number(star.dataset.star);
-            const isSelected = starValue === this.#value;
-            const isFilled = starValue <= this.#value;
+            const starValue = +star.dataset.star;
+            const isSelectedStar = starValue === this.#value;
+            const isFilledStar = starValue <= this.#value;
 
-            star.textContent = isFilled ? '★' : '☆';
-            star.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-            star.setAttribute('part', isSelected ? 'star selected-star' : 'star');
-
-            if (isSelected || (this.#value === 0 && index === 0)) {
+            if (isSelectedStar) {
+                star.setAttribute('aria-checked', 'true');
+                star.textContent = '★';
                 star.setAttribute('tabindex', '0');
-                if (shouldFocus && isSelected) star.focus();
+                 if (shouldFocus && isSelected) star.focus();
             } else {
+                star.setAttribute('aria-checked', 'false');
+                star.textContent = isFilledStar ? '★' : '☆';
                 star.removeAttribute('tabindex');
             }
         });

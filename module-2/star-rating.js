@@ -3,6 +3,14 @@ class StarRating extends HTMLElement {
 
     #value;
 
+    get value() {
+        return this.#value;
+    }
+
+    set value(val) {
+        this.#value = val;
+    }
+
     constructor() {
         super();
         this.innerHTML = `
@@ -31,7 +39,7 @@ class StarRating extends HTMLElement {
     #handleClick(event) {
         const selectedStar = event.target.closest('[data-star]');
         if (!selectedStar) return;
-        
+
         this.#value = Number(selectedStar.dataset.star);
         this.#updateDisplay();
     }
