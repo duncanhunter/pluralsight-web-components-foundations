@@ -46,7 +46,7 @@ class StarRating extends HTMLElement {
 
     #updateDisplay() {
         this.querySelectorAll('[data-star]').forEach((star) => {
-            const starValue = +star.dataset.star;
+            const starValue = Number(star.dataset.star);
             const isSelectedStar = starValue === this.#value;
             const isFilledStar = starValue <= this.#value;
 
