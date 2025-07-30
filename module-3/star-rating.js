@@ -15,7 +15,10 @@ class StarRating extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open', delegatesFocus: true });
         this.shadowRoot.innerHTML = `           
-         <div role="radiogroup">
+            <label id="label">
+                <slot name="label"></slot>
+            </label>
+            <div aria-labelledby="label" role="radiogroup">
                 <span role="radio" data-star="1">☆</span>
                 <span role="radio" data-star="2">☆</span>
                 <span role="radio" data-star="3">☆</span>
@@ -42,11 +45,11 @@ class StarRating extends HTMLElement {
         if (!selectedStar) return;
 
         this.#value = Number(selectedStar.dataset.star);
-        this.#updateDisplay();
+        this.#updateDisplay(true);
     }
 
     #updateDisplay(shouldFocus = false) {
-        this.shadowRoot.querySelectorAll('[data-star]').forEach((star, index) => {
+        this.shadowRoot.querySelectorAll('[data-star]').forEach((star) => {
             const starValue = Number(star.dataset.star);
             const isSelectedStar = starValue === this.#value;
             const isFilledStar = starValue <= this.#value;
@@ -55,7 +58,6 @@ class StarRating extends HTMLElement {
                 star.setAttribute('aria-checked', 'true');
                 star.textContent = '★';
                 star.setAttribute('tabindex', '0');
-
                 if (shouldFocus) {
                     star.focus();
                 }
