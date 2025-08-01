@@ -5,6 +5,19 @@
     <meta charset="UTF-8">
     <title>Pluralsight Web Component Foundations</title>
     <script type="module" src="./star-rating.js"></script>
+    <style>
+        :root {
+            --color-gold-600: gold;
+        }
+
+        :not(:defined) {
+            display: none;
+        }
+
+        star-rating::part(star) {
+            font-size: 2rem;
+        }
+    </style>
 </head>
 
 <body>

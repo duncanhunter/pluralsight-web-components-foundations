@@ -14,16 +14,25 @@ class StarRating extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open', delegatesFocus: true });
-        this.shadowRoot.innerHTML = `           
+        this.shadowRoot.innerHTML = `
+            <style>
+                :host::part(star) {
+                    cursor: pointer;
+                    color: var(--color-gold-600);
+                }
+                ::slotted([slot="label"]) {
+                    font-weight: bold;
+                }
+            </style>           
             <label id="label">
                 <slot name="label"></slot>
             </label>
             <div aria-labelledby="label" role="radiogroup">
-                <span role="radio" data-star="1">☆</span>
-                <span role="radio" data-star="2">☆</span>
-                <span role="radio" data-star="3">☆</span>
-                <span role="radio" data-star="4">☆</span>
-                <span role="radio" data-star="5">☆</span>
+                <span part="star" role="radio" data-star="1">☆</span>
+                <span part="star" role="radio" data-star="2">☆</span>
+                <span part="star" role="radio" data-star="3">☆</span>
+                <span part="star" role="radio" data-star="4">☆</span>
+                <span part="star" role="radio" data-star="5">☆</span>
             </div>`;
         this.#value = Number(this.getAttribute('value')) || 0;
         this.shadowRoot.addEventListener('click', this.#handleClick);
@@ -58,6 +67,7 @@ class StarRating extends HTMLElement {
                 star.setAttribute('aria-checked', 'true');
                 star.textContent = '★';
                 star.setAttribute('tabindex', '0');
+
                 if (shouldFocus) {
                     star.focus();
                 }
